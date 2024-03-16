@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary_text_default">@color/primary_text_default_lightmode</color>
+    <color name="primary_text_disabled">@color/primary_text_disabled_lightmode</color>
+    <color name="secondary_text_default">@color/secondary_text_default_lightmode</color>
+    <color name="secondary_text_disabled">@color/secondary_text_disabled_lightmode</color>
+</resources>

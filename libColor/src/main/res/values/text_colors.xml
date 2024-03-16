@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--  Night Mode  -->
+    <color name="primary_text_default_darkmode">#ffffffff</color>
+    <color name="primary_text_disabled_darkmode">#4Dffffff</color>
+    <color name="secondary_text_default_darkmode">#b3ffffff</color>
+    <color name="secondary_text_disabled_darkmode">#36ffffff</color>
+    <!--  Day Mode  -->
+    <color name="primary_text_default_lightmode">#de000000</color>
+    <color name="primary_text_disabled_lightmode">#39000000</color>
+    <color name="secondary_text_default_lightmode">#8a000000</color>
+    <color name="secondary_text_disabled_lightmode">#24000000</color>
+
+</resources>

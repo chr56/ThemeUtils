@@ -4,7 +4,7 @@
 /**
  * @author afollestad, plusCubed
  */
-package util.theme.viewtint
+package util.theme.view
 
 import android.annotation.SuppressLint
 import android.content.res.ColorStateList
@@ -20,7 +20,6 @@ import util.theme.color.adjustAlpha
 import util.theme.color.isWindowBackgroundDark
 import util.theme.drawable.createTintedDrawable
 import util.theme.tint.R
-import util.theme.view.setBackgroundCompat
 
 /**
  * @param tintBackground need to tint the background of a view or not

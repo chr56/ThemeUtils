@@ -1,6 +1,6 @@
 @file:JvmName("SeekBarUtil")
 
-package util.theme.viewtint
+package util.theme.view
 
 import android.annotation.SuppressLint
 import android.os.Build

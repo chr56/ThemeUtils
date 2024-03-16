@@ -1,6 +1,4 @@
-@file:JvmName("DrawableUtil") // ktlint-disable filename
-
-package util.theme.internal
+package util.theme.drawable
 
 import android.content.Context
 import android.content.res.ColorStateList
@@ -10,7 +8,6 @@ import androidx.core.content.ContextCompat
 import util.theme.color.adjustAlpha
 import util.theme.color.shiftColor
 import util.theme.color.stripAlpha
-import util.theme.drawable.createTintedDrawable
 import util.theme.tint.R
 
 internal fun modifySwitchDrawable(

@@ -1,6 +1,6 @@
 @file:JvmName("RadioButtonUtil")
 
-package util.theme.viewtint
+package util.theme.view
 
 import android.content.res.ColorStateList
 import android.widget.RadioButton

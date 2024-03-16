@@ -1,15 +1,10 @@
 @file:JvmName("ResourcesUtil")
 
-package util.theme.resource
+package util.theme.internal
 
 import android.content.Context
-import android.content.res.Configuration
-import android.os.Build
 import android.util.TypedValue
 import androidx.annotation.AttrRes
-import util.theme.color.isColorLight
-
-
 
 
 fun Context.resolveColor(@AttrRes attr: Int, fallback: Int): Int {

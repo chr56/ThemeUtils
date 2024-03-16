@@ -1,6 +1,6 @@
 @file:JvmName("SelectorUtil")
 
-package util.theme.viewtint
+package util.theme.view
 
 import android.annotation.SuppressLint
 import android.content.res.ColorStateList
@@ -17,9 +17,7 @@ import util.theme.color.isColorLight
 import util.theme.color.primaryTextColor
 import util.theme.color.shiftColor
 import util.theme.drawable.createTintedDrawable
-import util.theme.internal.defaultRippleColor
 import util.theme.tint.R
-import util.theme.view.setBackgroundCompat
 
 fun setTintSelector(view: View, @ColorInt color: Int, darker: Boolean, useDarkTheme: Boolean) {
     val isColorLight = isColorLight(color)

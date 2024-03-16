@@ -1,6 +1,6 @@
 @file:JvmName("SearchViewTintUtil")
 
-package util.theme.viewtint
+package util.theme.view
 
 import android.util.Log
 import android.widget.EditText

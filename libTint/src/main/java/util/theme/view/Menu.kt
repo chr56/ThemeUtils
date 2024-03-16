@@ -3,7 +3,7 @@
  */
 @file:JvmName("MenuUtil")
 
-package util.theme.viewtint
+package util.theme.view
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -26,8 +26,7 @@ import util.theme.color.isColorLight
 import util.theme.drawable.createTintedDrawable
 import util.theme.internal.declaredField
 import util.theme.internal.reflectDeclaredField
-import util.theme.resource.resolveColor
-import util.theme.view.removeOnGlobalLayoutListener
+import util.theme.internal.resolveColor
 import android.widget.SearchView as SearchViewOS
 import androidx.appcompat.widget.SearchView as SearchViewX
 

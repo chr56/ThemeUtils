@@ -1,6 +1,6 @@
 @file:JvmName("TabLayoutUtil") // ktlint-disable filename
 
-package util.theme.viewtint
+package util.theme.view
 
 import androidx.annotation.ColorInt
 import com.google.android.material.tabs.TabLayout

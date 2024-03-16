@@ -3,7 +3,7 @@ package util.theme.color
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
-import util.theme.resource.resolveColor
+import util.theme.internal.resolveColor
 
 fun Context.isNightMode(): Boolean =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {

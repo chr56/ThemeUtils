@@ -3,7 +3,7 @@
  */
 @file:JvmName("NavigationViewUtil")
 
-package util.theme.viewtint
+package util.theme.view
 
 import androidx.annotation.ColorInt
 import com.google.android.material.navigation.NavigationView

@@ -19,3 +19,6 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 rootProject.name = "ThemeUtil"
 rootProject.buildFileName = "build.gradle.kts"
+
+
+include("libColor")

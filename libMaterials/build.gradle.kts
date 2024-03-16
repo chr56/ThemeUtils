@@ -58,7 +58,8 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.annotation)
+    //noinspection GradleDependency,UseTomlInstead
+    implementation("androidx.annotation:annotation:1.4.0") // last version without kotlin
 }
 
 publishing {

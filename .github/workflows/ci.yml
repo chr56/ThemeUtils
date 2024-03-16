@@ -1,0 +1,62 @@
+name: ci
+on:
+  push:
+    branches:
+      - 'dev'
+    paths-ignore:
+      - '**.md'
+
+  workflow_dispatch:
+  pull_request:
+    branches: [ dev ]
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+          cache: gradle
+
+      - name: Prepare Gradle
+        run: ./gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew assembleRelease --stacktrace --parallel
+
+      - name: Upload libColor aar
+        uses: actions/upload-artifact@v4
+        with:
+          name: libColorRes
+          retention-days: 3
+          path: |
+            ./libColor/build/outputs/aar/*-release.aar
+
+      - name: Upload libMaterials aar
+        uses: actions/upload-artifact@v4
+        with:
+          name: libUtil
+          retention-days: 3
+          path: |
+            ./libMaterials/build/outputs/aar/*-release.aar
+
+      - name: Upload libTint aar
+        uses: actions/upload-artifact@v4
+        with:
+          name: libTint
+          retention-days: 3
+          path: |
+            ./libTint/build/outputs/aar/*-release.aar
+
+
+

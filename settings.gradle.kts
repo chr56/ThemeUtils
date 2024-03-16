@@ -23,3 +23,4 @@ rootProject.buildFileName = "build.gradle.kts"
 
 include("libColor")
 include("libMaterials")
+include("libTint")

@@ -1,6 +1,6 @@
 @file:JvmName("ProgressBarUtil")
 
-package util.theme.view
+package util.theme.view.progressbar
 
 import android.annotation.SuppressLint
 import android.content.res.ColorStateList

@@ -1,6 +1,6 @@
 @file:JvmName("SwitchUtil") // ktlint-disable filename
 
-package util.theme.view
+package util.theme.view.switch
 
 import android.annotation.SuppressLint
 import android.widget.Switch

@@ -1,6 +1,6 @@
 @file:JvmName("CheckBoxUtil")
 
-package util.theme.view
+package util.theme.view.checkbox
 
 import android.annotation.SuppressLint
 import android.content.res.ColorStateList

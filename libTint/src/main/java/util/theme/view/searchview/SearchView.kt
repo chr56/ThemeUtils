@@ -1,6 +1,6 @@
 @file:JvmName("SearchViewTintUtil")
 
-package util.theme.view
+package util.theme.view.searchview
 
 import android.util.Log
 import android.widget.EditText
@@ -8,6 +8,8 @@ import android.widget.ImageView
 import androidx.annotation.ColorInt
 import util.theme.color.adjustAlpha
 import util.theme.internal.reflectDeclaredField
+import util.theme.view.edittext.setCursorTint
+import util.theme.drawable.setDrawableColor
 import android.widget.SearchView as SearchViewOS
 import androidx.appcompat.widget.SearchView as SearchViewX
 

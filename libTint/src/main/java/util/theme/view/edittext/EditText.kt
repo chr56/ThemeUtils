@@ -1,6 +1,6 @@
 @file:JvmName("EditTextUtil")
 
-package util.theme.view
+package util.theme.view.edittext
 
 import android.annotation.SuppressLint
 import android.content.res.ColorStateList

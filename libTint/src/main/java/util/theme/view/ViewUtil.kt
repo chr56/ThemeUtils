@@ -22,17 +22,17 @@ fun View.setBackgroundCompat(drawable: Drawable?) {
     ViewCompat.setBackground(this, drawable)
 }
 
-fun setBackgroundTransition(view: View, newDrawable: Drawable): TransitionDrawable {
-    val transition = createTransitionDrawable(view.background, newDrawable)
-    view.setBackgroundCompat(transition)
+fun View.setBackgroundTransition(newDrawable: Drawable): TransitionDrawable {
+    val transition = createTransitionDrawable(background, newDrawable)
+    setBackgroundCompat(transition)
     return transition
 }
 
-fun setBackgroundColorTransition(view: View, @ColorInt newColor: Int): TransitionDrawable {
-    val oldColor = view.background
-    val start = oldColor ?: ColorDrawable(view.solidColor)
+fun View.setBackgroundColorTransition(@ColorInt newColor: Int): TransitionDrawable {
+    val oldColor = background
+    val start = oldColor ?: ColorDrawable(solidColor)
     val end: Drawable = ColorDrawable(newColor)
     val transition = createTransitionDrawable(start, end)
-    view.setBackgroundCompat(transition)
+    setBackgroundCompat(transition)
     return transition
 }

@@ -9,6 +9,8 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.os.Build
+import android.os.Build.VERSION.SDK_INT
+import android.os.Build.VERSION_CODES.LOLLIPOP
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -51,10 +53,10 @@ fun setMenuColor(
     @ColorInt menuWidgetColor: Int
 ) {
     val actualMenu: Menu? = menu ?: toolbar.menu
-    toolbar.post {
-        applyOverflowMenuTint(context, toolbar, menuWidgetColor)
-    }
     tintMenuActionIcons(toolbar, actualMenu, menuWidgetColor)
+    toolbar.post {
+        tintToolbarOverflowMenu(context, toolbar, menuWidgetColor)
+    }
     if (context is Activity) {
         context.setOverflowButtonColor(menuWidgetColor)
     }
@@ -121,7 +123,7 @@ fun tintMenuActionIcons(toolbar: Toolbar, menu: Menu?, @ColorInt iconColor: Int)
 
 @MainThread
 @SuppressLint("RestrictedApi")
-fun applyOverflowMenuTint(context: Context, toolbar: Toolbar, @ColorInt color: Int) {
+fun tintToolbarOverflowMenu(context: Context, toolbar: Toolbar, @ColorInt color: Int) {
     try {
         val actionMenuView: ActionMenuView =
             toolbar.reflectDeclaredField("mMenuView")
@@ -142,17 +144,11 @@ fun applyOverflowMenuTint(context: Context, toolbar: Toolbar, @ColorInt color: I
             return helper
         }
 
-        val overflowMenuPopupHelper: MenuPopupHelper? =
-            getPopupHelperFromActionMenuPresenter(presenter, "mOverflowPopup")
-        if (overflowMenuPopupHelper != null) {
-            setTintForMenuPopupHelper(context, overflowMenuPopupHelper, color)
-        }
+        val overflowMenuPopupHelper: MenuPopupHelper? = getPopupHelperFromActionMenuPresenter(presenter, "mOverflowPopup")
+        overflowMenuPopupHelper?.tintMenuItems(context, color)
 
-        val subMenuPopupHelper: MenuPopupHelper? =
-            getPopupHelperFromActionMenuPresenter(presenter, "mActionButtonPopup")
-        if (subMenuPopupHelper != null) {
-            setTintForMenuPopupHelper(context, subMenuPopupHelper, color)
-        }
+        val subMenuPopupHelper: MenuPopupHelper? = getPopupHelperFromActionMenuPresenter(presenter, "mActionButtonPopup")
+        subMenuPopupHelper?.tintMenuItems(context, color)
     } catch (e: Exception) {
         Log.v(REFLECT_TAG, "Failed to apply OverflowMenu Tint", e)
     }
@@ -160,13 +156,12 @@ fun applyOverflowMenuTint(context: Context, toolbar: Toolbar, @ColorInt color: I
 
 @Suppress("INACCESSIBLE_TYPE")
 @SuppressLint("RestrictedApi")
-fun setTintForMenuPopupHelper(
+fun MenuPopupHelper.tintMenuItems(
     context: Context,
-    menuPopupHelper: MenuPopupHelper,
     @ColorInt color: Int
 ) {
     try {
-        val listView = (menuPopupHelper.popup as? ShowableListMenu)?.listView
+        val listView = (popup as? ShowableListMenu)?.listView
         listView?.viewTreeObserver?.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
             @SuppressLint("ObsoleteSdkInt")
             override fun onGlobalLayout() {
@@ -182,21 +177,17 @@ fun setTintForMenuPopupHelper(
                     for (i in 0 until listView.childCount) {
                         val v = listView.getChildAt(i) as? ListMenuItemView ?: continue
 
-                        (checkboxField[v] as? CheckBox)?.let { check ->
-                            check.setTint(color, isDark)
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                check.background = null
-                            }
+                        (checkboxField[v] as? CheckBox)?.let { checkBox ->
+                            checkBox.setTint(color, isDark)
+                            if (SDK_INT >= LOLLIPOP) checkBox.background = null
                         }
                         (radioButtonField[v] as? RadioButton)?.let { radioButton ->
                             radioButton.setTint(color, isDark)
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                radioButton.background = null
-                            }
+                            if (SDK_INT >= LOLLIPOP) radioButton.background = null
                         }
                     }
                 } catch (e: Exception) {
-                    Log.v(REFLECT_TAG, e.message.orEmpty())
+                    Log.v(REFLECT_TAG,"Failed to tint Menu Items", e)
                 }
                 listView.viewTreeObserver.removeOnGlobalLayoutListener(this)
             }
@@ -236,7 +227,7 @@ internal class mOnMenuItemClickListener(
 
     override fun onMenuItemClick(item: MenuItem): Boolean {
         mToolbar.post {
-            applyOverflowMenuTint(mContext, mToolbar, mColor)
+            tintToolbarOverflowMenu(mContext, mToolbar, mColor)
         }
         return mParentListener != null && mParentListener.onMenuItemClick(item)
     }
@@ -256,7 +247,7 @@ internal class mMenuPresenterCallback(
 
     override fun onOpenSubMenu(subMenu: MenuBuilder): Boolean {
         mToolbar.post {
-            applyOverflowMenuTint(mContext, mToolbar, mColor)
+            tintToolbarOverflowMenu(mContext, mToolbar, mColor)
         }
         return mParentCb != null && mParentCb.onOpenSubMenu(subMenu)
     }

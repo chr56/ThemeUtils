@@ -22,11 +22,10 @@ import androidx.appcompat.view.menu.*
 import androidx.appcompat.widget.ActionMenuView
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.Toolbar
-import util.theme.color.isColorLight
+import util.theme.color.isWindowBackgroundDark
 import util.theme.drawable.createTintedDrawable
 import util.theme.internal.declaredField
 import util.theme.internal.reflectDeclaredField
-import util.theme.internal.resolveColor
 import util.theme.view.checkbox.setTint
 import util.theme.view.radiobutton.setTint
 import util.theme.view.removeOnGlobalLayoutListener
@@ -158,8 +157,7 @@ fun setTintForMenuPopupHelper(
                         val radioButtonField =
                             ListMenuItemView::class.java.declaredField("mRadioButton")
 
-                        val isDark =
-                            !isColorLight(context.resolveColor(android.R.attr.windowBackground, 0))
+                        val isDark = context.isWindowBackgroundDark()
 
                         for (i in 0 until listView.childCount) {
                             val v = listView.getChildAt(i) as? ListMenuItemView ?: continue

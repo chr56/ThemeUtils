@@ -19,14 +19,14 @@ Besides, [material-tools](https://github.com/chr56/material-tools) is an old ver
 ```groovy
 dependencies {
     // color-util: calculate colors
-    implementation("com.github.chr56.ThemeUtils:color-util:0.1.0")
+    implementation("com.github.chr56.ThemeUtils:color-util:0.2.0")
     // materials-util: most material color values resource (non-kotlin)
-    implementation("com.github.chr56.ThemeUtils:materials-util:0.1.0")
+    implementation("com.github.chr56.ThemeUtils:materials-util:0.2.0")
     // tint-util: tint the Views
-    implementation("com.github.chr56.ThemeUtils:tint-util:0.1.0")
+    implementation("com.github.chr56.ThemeUtils:tint-util:0.2.0")
 
     // It is suggested to add Google material design library if you use tint-util
-    implementation("com.google.android.material:material:1.4.0")
+    implementation("com.google.android.material:material:1.9.0")
 }
 ```
 

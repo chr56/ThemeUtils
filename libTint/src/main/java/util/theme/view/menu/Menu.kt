@@ -18,6 +18,7 @@ import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.widget.CheckBox
 import android.widget.RadioButton
 import androidx.annotation.ColorInt
+import androidx.annotation.MainThread
 import androidx.appcompat.view.menu.*
 import androidx.appcompat.widget.ActionMenuView
 import androidx.appcompat.widget.AppCompatImageView
@@ -50,8 +51,10 @@ fun setMenuColor(
     @ColorInt menuWidgetColor: Int
 ) {
     val actualMenu: Menu? = menu ?: toolbar.menu
+    toolbar.post {
+        applyOverflowMenuTint(context, toolbar, menuWidgetColor)
+    }
     tintMenuActionIcons(toolbar, actualMenu, menuWidgetColor)
-    applyOverflowMenuTint(context, toolbar, menuWidgetColor)
     if (context is Activity) {
         context.setOverflowButtonColor(menuWidgetColor)
     }
@@ -116,74 +119,90 @@ fun tintMenuActionIcons(toolbar: Toolbar, menu: Menu?, @ColorInt iconColor: Int)
     }
 }
 
-fun applyOverflowMenuTint(context: Context, toolbar: Toolbar?, @ColorInt color: Int) {
-    toolbar?.post {
-        try {
-            val actionMenuView: ActionMenuView =
-                toolbar.reflectDeclaredField("mMenuView")
+@MainThread
+@SuppressLint("RestrictedApi")
+fun applyOverflowMenuTint(context: Context, toolbar: Toolbar, @ColorInt color: Int) {
+    try {
+        val actionMenuView: ActionMenuView =
+            toolbar.reflectDeclaredField("mMenuView")
 
-            // Actually ActionMenuPresenter //todo
-            val presenter: BaseMenuPresenter = /* : ActionMenuPresenter = */
-                actionMenuView.reflectDeclaredField("mPresenter")
+        val presenter: BaseMenuPresenter = /* : ActionMenuPresenter = */
+            actionMenuView.reflectDeclaredField("mPresenter")
 
-            val overflowMenuPopupHelper: MenuPopupHelper =
-                presenter.reflectDeclaredField("mOverflowPopup")
-            setTintForMenuPopupHelper(context, overflowMenuPopupHelper, color)
-
-            val subMenuPopupHelper: MenuPopupHelper =
-                presenter.reflectDeclaredField("mActionButtonPopup")
-            setTintForMenuPopupHelper(context, subMenuPopupHelper, color)
-        } catch (e: Exception) {
-            Log.v(REFLECT_TAG, e.message.orEmpty())
+        fun getPopupHelperFromActionMenuPresenter(
+            presenter: BaseMenuPresenter,
+            fieldName: String,
+        ): MenuPopupHelper? {
+            val actionMenuPresenterField = ActionMenuView::class.java.declaredField("mPresenter")
+            val helper = actionMenuPresenterField.type.getDeclaredField(fieldName).let { field ->
+                field.isAccessible = true
+                val menuHelper = field.get(presenter)
+                menuHelper as? MenuPopupHelper
+            }
+            return helper
         }
+
+        val overflowMenuPopupHelper: MenuPopupHelper? =
+            getPopupHelperFromActionMenuPresenter(presenter, "mOverflowPopup")
+        if (overflowMenuPopupHelper != null) {
+            setTintForMenuPopupHelper(context, overflowMenuPopupHelper, color)
+        }
+
+        val subMenuPopupHelper: MenuPopupHelper? =
+            getPopupHelperFromActionMenuPresenter(presenter, "mActionButtonPopup")
+        if (subMenuPopupHelper != null) {
+            setTintForMenuPopupHelper(context, subMenuPopupHelper, color)
+        }
+    } catch (e: Exception) {
+        Log.v(REFLECT_TAG, "Failed to apply OverflowMenu Tint", e)
     }
 }
 
+@Suppress("INACCESSIBLE_TYPE")
+@SuppressLint("RestrictedApi")
 fun setTintForMenuPopupHelper(
     context: Context,
-    menuPopupHelper: MenuPopupHelper?,
+    menuPopupHelper: MenuPopupHelper,
     @ColorInt color: Int
 ) {
-    menuPopupHelper?.let {
-        try {
-            val listView = (it.popup as? ShowableListMenu)?.listView
-            listView?.viewTreeObserver?.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
-                @SuppressLint("ObsoleteSdkInt")
-                override fun onGlobalLayout() {
-                    try {
-                        val checkboxField =
-                            ListMenuItemView::class.java.declaredField("mCheckBox")
+    try {
+        val listView = (menuPopupHelper.popup as? ShowableListMenu)?.listView
+        listView?.viewTreeObserver?.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+            @SuppressLint("ObsoleteSdkInt")
+            override fun onGlobalLayout() {
+                try {
+                    val checkboxField =
+                        ListMenuItemView::class.java.declaredField("mCheckBox")
 
-                        val radioButtonField =
-                            ListMenuItemView::class.java.declaredField("mRadioButton")
+                    val radioButtonField =
+                        ListMenuItemView::class.java.declaredField("mRadioButton")
 
-                        val isDark = context.isWindowBackgroundDark()
+                    val isDark = context.isWindowBackgroundDark()
 
-                        for (i in 0 until listView.childCount) {
-                            val v = listView.getChildAt(i) as? ListMenuItemView ?: continue
+                    for (i in 0 until listView.childCount) {
+                        val v = listView.getChildAt(i) as? ListMenuItemView ?: continue
 
-                            (checkboxField[v] as? CheckBox)?.let { check ->
-                                check.setTint(color, isDark)
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                    check.background = null
-                                }
-                            }
-                            (radioButtonField[v] as? RadioButton)?.let { radioButton ->
-                                radioButton.setTint(color, isDark)
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                    radioButton.background = null
-                                }
+                        (checkboxField[v] as? CheckBox)?.let { check ->
+                            check.setTint(color, isDark)
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                check.background = null
                             }
                         }
-                    } catch (e: Exception) {
-                        Log.v(REFLECT_TAG, e.message.orEmpty())
+                        (radioButtonField[v] as? RadioButton)?.let { radioButton ->
+                            radioButton.setTint(color, isDark)
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                radioButton.background = null
+                            }
+                        }
                     }
-                    listView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                } catch (e: Exception) {
+                    Log.v(REFLECT_TAG, e.message.orEmpty())
                 }
-            })
-        } catch (e: Exception) {
-            Log.v(REFLECT_TAG, e.message.orEmpty())
-        }
+                listView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+            }
+        })
+    } catch (e: Exception) {
+        Log.v(REFLECT_TAG, e.message.orEmpty())
     }
 }
 
@@ -216,7 +235,9 @@ internal class mOnMenuItemClickListener(
 ) : Toolbar.OnMenuItemClickListener {
 
     override fun onMenuItemClick(item: MenuItem): Boolean {
-        applyOverflowMenuTint(mContext, mToolbar, mColor)
+        mToolbar.post {
+            applyOverflowMenuTint(mContext, mToolbar, mColor)
+        }
         return mParentListener != null && mParentListener.onMenuItemClick(item)
     }
 }
@@ -234,7 +255,9 @@ internal class mMenuPresenterCallback(
     }
 
     override fun onOpenSubMenu(subMenu: MenuBuilder): Boolean {
-        applyOverflowMenuTint(mContext, mToolbar, mColor)
+        mToolbar.post {
+            applyOverflowMenuTint(mContext, mToolbar, mColor)
+        }
         return mParentCb != null && mParentCb.onOpenSubMenu(subMenu)
     }
 }

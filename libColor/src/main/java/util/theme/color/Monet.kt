@@ -9,34 +9,40 @@ import androidx.annotation.RequiresApi
 @Suppress("unused")
 object MonetColor {
 
+    @JvmStatic
     @RequiresApi(S)
     @ColorInt
     fun accent1Color(context: Context, @Depth deep: Int): Int =
         dynasticColor(context, ACCENT1, deep)
 
+    @JvmStatic
     @RequiresApi(S)
     @ColorInt
     fun accent2Color(context: Context, @Depth deep: Int): Int =
         dynasticColor(context, ACCENT2, deep)
 
+    @JvmStatic
     @RequiresApi(S)
     @ColorInt
     fun accent3Color(context: Context, @Depth deep: Int): Int =
         dynasticColor(context, ACCENT3, deep)
 
+    @JvmStatic
     @RequiresApi(S)
     @ColorInt
     fun neutral1Color(context: Context, @Depth deep: Int): Int =
         dynasticColor(context, NEUTRAL1, deep)
 
+    @JvmStatic
     @RequiresApi(S)
     @ColorInt
     fun neutral2Color(context: Context, @Depth deep: Int): Int =
         dynasticColor(context, NEUTRAL2, deep)
 
+    @JvmStatic
     @RequiresApi(S)
     @ColorInt
-    private fun dynasticColor(context: Context, @Type type: Int, @Depth deep: Int): Int {
+    fun dynasticColor(context: Context, @Type type: Int, @Depth deep: Int): Int {
         return when (type) {
             ACCENT1 -> when (deep) {
                 DEPTH_0 -> context.getColor(android.R.color.system_accent1_0)
@@ -170,24 +176,5 @@ object MonetColor {
     const val DEPTH_800 = 800
     const val DEPTH_900 = 900
     const val DEPTH_1000 = 1000
-
-    @JvmInline
-    value class MonetColorPalette internal constructor(internal val value: Int) {
-        constructor(@Type type: Int, @Depth depth: Int) : this((type shl SHIFT) + depth)
-
-        val type: Int @Type get() = value ushr SHIFT
-        val depth: Int @Depth get() = value shl SHIFT ushr SHIFT
-
-        @RequiresApi(S)
-        @ColorInt
-        fun color(context: Context): Int = dynasticColor(context, type, depth)
-
-        companion object {
-            private const val SHIFT = 16
-        }
-    }
-
-    val defaultMonetPrimaryColor get() = MonetColorPalette(ACCENT1, DEPTH_400)
-    val defaultMonetAccentColor get() = MonetColorPalette(ACCENT1, DEPTH_700)
 
 }

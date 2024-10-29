@@ -56,6 +56,7 @@ android {
 
 dependencies {
     api(projects.libColor)
+    compileOnly(projects.stubClasses)
 
     implementation(libs.androidx.core)
     implementation(libs.androidx.appcompat)

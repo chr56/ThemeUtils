@@ -89,7 +89,7 @@ fun setMenuColor(
             toolbar.setOnMenuItemClickListener(newClickListener)
         }
     } catch (e: Exception) {
-        Log.v(REFLECT_TAG, e.message.orEmpty())
+        Log.v(REFLECT_TAG, "Failed to change menu color: ${e.javaClass.simpleName} ${e.message}")
     }
 }
 
@@ -150,7 +150,8 @@ fun tintToolbarOverflowMenu(context: Context, toolbar: Toolbar, @ColorInt color:
         val subMenuPopupHelper: MenuPopupHelper? = getPopupHelperFromActionMenuPresenter(presenter, "mActionButtonPopup")
         subMenuPopupHelper?.tintMenuItems(context, color)
     } catch (e: Exception) {
-        Log.v(REFLECT_TAG, "Failed to apply OverflowMenu Tint", e)
+        Log.v(REFLECT_TAG, "Failed to apply OverflowMenu Tint:")
+        Log.v(REFLECT_TAG, "${e.javaClass.simpleName} ${e.message}")
     }
 }
 
@@ -187,13 +188,14 @@ fun MenuPopupHelper.tintMenuItems(
                         }
                     }
                 } catch (e: Exception) {
-                    Log.v(REFLECT_TAG,"Failed to tint Menu Items", e)
+                    Log.v(REFLECT_TAG, "Failed to tint Menu Items at onGlobalLayout:")
+                    Log.v(REFLECT_TAG, "${e.javaClass.simpleName} ${e.message}")
                 }
                 listView.viewTreeObserver.removeOnGlobalLayoutListener(this)
             }
         })
     } catch (e: Exception) {
-        Log.v(REFLECT_TAG, e.message.orEmpty())
+        Log.v(REFLECT_TAG, "Failed to tint Menu Items: ${e.javaClass.simpleName} ${e.message}")
     }
 }
 

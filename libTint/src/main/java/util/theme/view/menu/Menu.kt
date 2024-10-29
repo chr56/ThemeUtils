@@ -88,7 +88,7 @@ fun setMenuColor(
                 mOnMenuItemClickListener(context, menuWidgetColor, currentClickListener, toolbar)
             toolbar.setOnMenuItemClickListener(newClickListener)
         }
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
         Log.v(REFLECT_TAG, "Failed to change menu color: ${e.javaClass.simpleName} ${e.message}")
     }
 }
@@ -124,34 +124,48 @@ fun tintMenuActionIcons(toolbar: Toolbar, menu: Menu?, @ColorInt iconColor: Int)
 @MainThread
 @SuppressLint("RestrictedApi")
 fun tintToolbarOverflowMenu(context: Context, toolbar: Toolbar, @ColorInt color: Int) {
-    try {
-        val actionMenuView: ActionMenuView =
-            toolbar.reflectDeclaredField("mMenuView")
 
-        val presenter: BaseMenuPresenter = /* : ActionMenuPresenter = */
-            actionMenuView.reflectDeclaredField("mPresenter")
+    val presenter: BaseMenuPresenter = /* : ActionMenuPresenter = */
+        try {
+            val actionMenuView: ActionMenuView =
+                toolbar.reflectDeclaredField("mMenuView")
 
-        fun getPopupHelperFromActionMenuPresenter(
-            presenter: BaseMenuPresenter,
-            fieldName: String,
-        ): MenuPopupHelper? {
-            val actionMenuPresenterField = ActionMenuView::class.java.declaredField("mPresenter")
-            val helper = actionMenuPresenterField.type.getDeclaredField(fieldName).let { field ->
-                field.isAccessible = true
-                val menuHelper = field.get(presenter)
-                menuHelper as? MenuPopupHelper
-            }
-            return helper
+            val presenter: BaseMenuPresenter = /* : ActionMenuPresenter = */
+                actionMenuView.reflectDeclaredField("mPresenter")
+
+            presenter
+        } catch (e: Throwable) {
+            Log.v(REFLECT_TAG, "Failed to obtain MenuPresenter: ${e.javaClass.simpleName} ${e.message}")
+            return
         }
+
+
+    fun getPopupHelperFromActionMenuPresenter(
+        presenter: BaseMenuPresenter,
+        fieldName: String,
+    ): MenuPopupHelper? = try {
+        val actionMenuPresenterField = ActionMenuView::class.java.declaredField("mPresenter")
+        val helper = actionMenuPresenterField.type.getDeclaredField(fieldName).let { field ->
+            field.isAccessible = true
+            val menuHelper = field.get(presenter)
+            menuHelper as? MenuPopupHelper
+        }
+        helper
+    } catch (e: Throwable) {
+        Log.v(REFLECT_TAG, "Failed to obtain PopupHelper (from $fieldName): ${e.javaClass.simpleName} ${e.message}")
+        null
+    }
+
+    try {
 
         val overflowMenuPopupHelper: MenuPopupHelper? = getPopupHelperFromActionMenuPresenter(presenter, "mOverflowPopup")
         overflowMenuPopupHelper?.tintMenuItems(context, color)
 
         val subMenuPopupHelper: MenuPopupHelper? = getPopupHelperFromActionMenuPresenter(presenter, "mActionButtonPopup")
         subMenuPopupHelper?.tintMenuItems(context, color)
-    } catch (e: Exception) {
-        Log.v(REFLECT_TAG, "Failed to apply OverflowMenu Tint:")
-        Log.v(REFLECT_TAG, "${e.javaClass.simpleName} ${e.message}")
+
+    } catch (e: Throwable) {
+        Log.v(REFLECT_TAG, "Failed to apply OverflowMenu Tint: ${e.javaClass.simpleName} ${e.message}")
     }
 }
 
@@ -187,14 +201,14 @@ fun MenuPopupHelper.tintMenuItems(
                             if (SDK_INT >= LOLLIPOP) radioButton.background = null
                         }
                     }
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     Log.v(REFLECT_TAG, "Failed to tint Menu Items at onGlobalLayout:")
                     Log.v(REFLECT_TAG, "${e.javaClass.simpleName} ${e.message}")
                 }
                 listView.viewTreeObserver.removeOnGlobalLayoutListener(this)
             }
         })
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
         Log.v(REFLECT_TAG, "Failed to tint Menu Items: ${e.javaClass.simpleName} ${e.message}")
     }
 }

@@ -8,7 +8,6 @@ package util.theme.view.menu
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
-import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.os.Build.VERSION_CODES.LOLLIPOP
 import android.util.Log
@@ -22,6 +21,7 @@ import android.widget.RadioButton
 import androidx.annotation.ColorInt
 import androidx.annotation.MainThread
 import androidx.appcompat.view.menu.*
+import androidx.appcompat.widget.ActionMenuPresenter
 import androidx.appcompat.widget.ActionMenuView
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.Toolbar
@@ -125,12 +125,12 @@ fun tintMenuActionIcons(toolbar: Toolbar, menu: Menu?, @ColorInt iconColor: Int)
 @SuppressLint("RestrictedApi")
 fun tintToolbarOverflowMenu(context: Context, toolbar: Toolbar, @ColorInt color: Int) {
 
-    val presenter: BaseMenuPresenter = /* : ActionMenuPresenter = */
+    val presenter: ActionMenuPresenter =
         try {
             val actionMenuView: ActionMenuView =
                 toolbar.reflectDeclaredField("mMenuView")
 
-            val presenter: BaseMenuPresenter = /* : ActionMenuPresenter = */
+            val presenter: ActionMenuPresenter =
                 actionMenuView.reflectDeclaredField("mPresenter")
 
             presenter

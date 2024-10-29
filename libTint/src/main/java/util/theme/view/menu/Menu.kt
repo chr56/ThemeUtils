@@ -63,10 +63,10 @@ fun setMenuColor(
     try {
         // Tint immediate overflow menu items
 
-        val currentPresenterCb: MenuPresenter.Callback =
+        val currentPresenterCb: MenuPresenter.Callback? =
             toolbar.reflectDeclaredField("mActionMenuPresenterCallback")
 
-        if (currentPresenterCb !is mMenuPresenterCallback) {
+        if (currentPresenterCb != null && currentPresenterCb !is mMenuPresenterCallback) {
             val newPresenterCb =
                 mMenuPresenterCallback(context, menuWidgetColor, currentPresenterCb, toolbar)
 
@@ -80,10 +80,10 @@ fun setMenuColor(
         }
 
         // OnMenuItemClickListener to tint submenu items
-        val currentClickListener: Toolbar.OnMenuItemClickListener =
+        val currentClickListener: Toolbar.OnMenuItemClickListener? =
             toolbar.reflectDeclaredField("mOnMenuItemClickListener")
 
-        if (currentClickListener !is mOnMenuItemClickListener) {
+        if (currentClickListener != null && currentClickListener !is mOnMenuItemClickListener) {
             val newClickListener =
                 mOnMenuItemClickListener(context, menuWidgetColor, currentClickListener, toolbar)
             toolbar.setOnMenuItemClickListener(newClickListener)

@@ -140,32 +140,18 @@ fun tintToolbarOverflowMenu(context: Context, toolbar: Toolbar, @ColorInt color:
         }
 
 
-    fun getPopupHelperFromActionMenuPresenter(
-        presenter: BaseMenuPresenter,
-        fieldName: String,
-    ): MenuPopupHelper? = try {
-        val actionMenuPresenterField = ActionMenuView::class.java.declaredField("mPresenter")
-        val helper = actionMenuPresenterField.type.getDeclaredField(fieldName).let { field ->
-            field.isAccessible = true
-            val menuHelper = field.get(presenter)
-            menuHelper as? MenuPopupHelper
-        }
-        helper
+    try {
+        val overflowMenuPopupHelper: ActionMenuPresenter.OverflowPopup? = presenter.reflectDeclaredField("mOverflowPopup")
+        overflowMenuPopupHelper?.tintMenuItems(context, color)
     } catch (e: Throwable) {
-        Log.v(REFLECT_TAG, "Failed to obtain PopupHelper (from $fieldName): ${e.javaClass.simpleName} ${e.message}")
-        null
+        Log.v(REFLECT_TAG, "Failed to apply OverflowPopup Tint: ${e.javaClass.simpleName} ${e.message}")
     }
 
     try {
-
-        val overflowMenuPopupHelper: MenuPopupHelper? = getPopupHelperFromActionMenuPresenter(presenter, "mOverflowPopup")
-        overflowMenuPopupHelper?.tintMenuItems(context, color)
-
-        val subMenuPopupHelper: MenuPopupHelper? = getPopupHelperFromActionMenuPresenter(presenter, "mActionButtonPopup")
+        val subMenuPopupHelper: ActionMenuPresenter.ActionButtonSubmenu? = presenter.reflectDeclaredField("mActionButtonPopup")
         subMenuPopupHelper?.tintMenuItems(context, color)
-
     } catch (e: Throwable) {
-        Log.v(REFLECT_TAG, "Failed to apply OverflowMenu Tint: ${e.javaClass.simpleName} ${e.message}")
+        Log.v(REFLECT_TAG, "Failed to apply ActionButtonSubmenu Tint: ${e.javaClass.simpleName} ${e.message}")
     }
 }
 

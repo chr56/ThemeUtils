@@ -19,7 +19,6 @@ import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.widget.CheckBox
 import android.widget.RadioButton
 import androidx.annotation.ColorInt
-import androidx.annotation.MainThread
 import androidx.appcompat.view.menu.*
 import androidx.appcompat.widget.ActionMenuPresenter
 import androidx.appcompat.widget.ActionMenuView
@@ -34,6 +33,7 @@ import util.theme.view.radiobutton.setTint
 import util.theme.view.removeOnGlobalLayoutListener
 import util.theme.view.searchview.setSearchViewContentColor
 import util.theme.view.toolbar.tintCollapseIcon
+import util.theme.view.toolbar.tintNavigationIcon
 import android.widget.SearchView as SearchViewOS
 import androidx.appcompat.widget.SearchView as SearchViewX
 
@@ -47,56 +47,35 @@ import androidx.appcompat.widget.SearchView as SearchViewX
  */
 @SuppressLint("RestrictedApi")
 fun setMenuColor(
-    context: Context,
-    toolbar: Toolbar,
-    menu: Menu?,
-    @ColorInt menuWidgetColor: Int
+    context: Context, toolbar: Toolbar, menu: Menu?, @ColorInt menuWidgetColor: Int
 ) {
-    val actualMenu: Menu? = menu ?: toolbar.menu
-    tintMenuActionIcons(toolbar, actualMenu, menuWidgetColor)
+
     toolbar.post {
-        tintToolbarOverflowMenu(context, toolbar, menuWidgetColor)
-    }
-    if (context is Activity) {
-        context.setOverflowButtonColor(menuWidgetColor)
+        tintToolbarBackIcon(toolbar, menuWidgetColor)
+        tintToolbarMenuActionIcons(menu ?: toolbar.menu, menuWidgetColor)
     }
 
-    // Tint immediate overflow menu items
-    try {
-        val presenterCallback: MenuPresenter.Callback? = toolbar.reflectDeclaredField("mActionMenuPresenterCallback")
+    tintOverflowButtonColor(context, menuWidgetColor)
 
-        if (presenterCallback != null && presenterCallback !is DelegateMenuPresenterCallback) {
-            val delegatePresenterCallback = DelegateMenuPresenterCallback(presenterCallback, toolbar, menuWidgetColor)
-            val menuBuilderCallback: MenuBuilder.Callback = toolbar.reflectDeclaredField("mMenuBuilderCallback")
+    tintOverflowMenuItems(toolbar, menuWidgetColor)
 
-            toolbar.setMenuCallbacks(delegatePresenterCallback, menuBuilderCallback)
+    applyMenuPresenterCallback(toolbar, menuWidgetColor)
 
-            val menuView: ActionMenuView? = toolbar.reflectDeclaredField("mMenuView")
-            menuView?.setMenuCallbacks(delegatePresenterCallback, menuBuilderCallback)
-        }
-    } catch (e: Throwable) {
-        Log.v(REFLECT_TAG, "Failed to change menu color: ${e.javaClass.simpleName} ${e.message}")
-    }
-
-    // OnMenuItemClickListener to tint submenu items
-    try {
-        val itemClickListener: Toolbar.OnMenuItemClickListener? = toolbar.reflectDeclaredField("mOnMenuItemClickListener")
-
-        if (itemClickListener != null && itemClickListener !is DelegateOnMenuItemClickListener) {
-            val delegateItemClickListener = DelegateOnMenuItemClickListener(itemClickListener, toolbar, menuWidgetColor)
-            toolbar.setOnMenuItemClickListener(delegateItemClickListener)
-        }
-    } catch (e: Throwable) {
-        Log.v(REFLECT_TAG, "Failed to change menu color: ${e.javaClass.simpleName} ${e.message}")
-    }
+    applyMenuItemClickListener(toolbar, menuWidgetColor)
 }
 
+/**
+ * tint `CollapseIcon` & `NavigationIcon` (Icon on the left side)
+ */
+fun tintToolbarBackIcon(toolbar: Toolbar, @ColorInt iconColor: Int) {
+    toolbar.tintCollapseIcon(iconColor)
+    toolbar.tintNavigationIcon(iconColor)
+}
 
 /**
- * tint `CollapseIcon`, all `Icon` menu items, `SearchView`
+ * tint all `SHOW_AS_ACTION` menu items & `SearchView`
  */
-fun tintMenuActionIcons(toolbar: Toolbar, menu: Menu?, @ColorInt iconColor: Int) {
-    toolbar.tintCollapseIcon(iconColor)
+fun tintToolbarMenuActionIcons(menu: Menu?, @ColorInt iconColor: Int) {
     if (menu != null && menu.size() > 0) {
         for (i in 0 until menu.size()) {
             val item = menu.getItem(i)
@@ -119,9 +98,11 @@ fun tintMenuActionIcons(toolbar: Toolbar, menu: Menu?, @ColorInt iconColor: Int)
     }
 }
 
-@MainThread
+/**
+ * tint
+ */
 @SuppressLint("RestrictedApi")
-fun tintToolbarOverflowMenu(context: Context, toolbar: Toolbar, @ColorInt color: Int) {
+fun tintOverflowMenuItems(toolbar: Toolbar, @ColorInt iconColor: Int) {
 
     val presenter: ActionMenuPresenter =
         try {
@@ -140,25 +121,21 @@ fun tintToolbarOverflowMenu(context: Context, toolbar: Toolbar, @ColorInt color:
 
     try {
         val overflowMenuPopupHelper: ActionMenuPresenter.OverflowPopup? = presenter.reflectDeclaredField("mOverflowPopup")
-        overflowMenuPopupHelper?.tintMenuItems(context, color)
+        overflowMenuPopupHelper?.tintMenuItems(toolbar.context, iconColor)
     } catch (e: Throwable) {
         Log.v(REFLECT_TAG, "Failed to apply OverflowPopup Tint: ${e.javaClass.simpleName} ${e.message}")
     }
 
     try {
         val subMenuPopupHelper: ActionMenuPresenter.ActionButtonSubmenu? = presenter.reflectDeclaredField("mActionButtonPopup")
-        subMenuPopupHelper?.tintMenuItems(context, color)
+        subMenuPopupHelper?.tintMenuItems(toolbar.context, iconColor)
     } catch (e: Throwable) {
         Log.v(REFLECT_TAG, "Failed to apply ActionButtonSubmenu Tint: ${e.javaClass.simpleName} ${e.message}")
     }
 }
 
-@Suppress("INACCESSIBLE_TYPE")
 @SuppressLint("RestrictedApi")
-fun MenuPopupHelper.tintMenuItems(
-    context: Context,
-    @ColorInt color: Int
-) {
+fun MenuPopupHelper.tintMenuItems(context: Context, @ColorInt menuWidgetColor: Int) {
     try {
         val listView = (popup as? ShowableListMenu)?.listView
         listView?.viewTreeObserver?.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
@@ -177,11 +154,11 @@ fun MenuPopupHelper.tintMenuItems(
                         val v = listView.getChildAt(i) as? ListMenuItemView ?: continue
 
                         (checkboxField[v] as? CheckBox)?.let { checkBox ->
-                            checkBox.setTint(color, isDark)
+                            checkBox.setTint(menuWidgetColor, isDark)
                             if (SDK_INT >= LOLLIPOP) checkBox.background = null
                         }
                         (radioButtonField[v] as? RadioButton)?.let { radioButton ->
-                            radioButton.setTint(color, isDark)
+                            radioButton.setTint(menuWidgetColor, isDark)
                             if (SDK_INT >= LOLLIPOP) radioButton.background = null
                         }
                     }
@@ -197,24 +174,45 @@ fun MenuPopupHelper.tintMenuItems(
     }
 }
 
-internal fun Activity.setOverflowButtonColor(@ColorInt color: Int) {
-    (window.decorView as ViewGroup).also {
-        it.viewTreeObserver
-            .addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+/**
+ * tint Overflow Menu Button ("3 dots")
+ */
+fun tintOverflowButtonColor(context: Context, @ColorInt iconColor: Int) {
+    if (context is Activity) {
+        (context.window.decorView as ViewGroup).also {
+            it.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
                     val outViews = ArrayList<View>()
                     it.findViewsWithText(
                         outViews,
-                        getString(androidx.appcompat.R.string.abc_action_menu_overflow_description),
+                        context.getString(androidx.appcompat.R.string.abc_action_menu_overflow_description),
                         View.FIND_VIEWS_WITH_CONTENT_DESCRIPTION
                     )
                     if (outViews.isNotEmpty()) {
                         val overflow = outViews[0] as AppCompatImageView
-                        overflow.setImageDrawable(createTintedDrawable(overflow.drawable, color))
+                        overflow.setImageDrawable(createTintedDrawable(overflow.drawable, iconColor))
                         it.removeOnGlobalLayoutListener(this)
                     }
                 }
             })
+        }
+    }
+}
+
+/**
+ * register a delegated [Toolbar.OnMenuItemClickListener] for updating Overflow Menu Items
+ */
+fun applyMenuItemClickListener(toolbar: Toolbar, @ColorInt menuWidgetColor: Int) {
+    // OnMenuItemClickListener to tint submenu items
+    try {
+        val itemClickListener: Toolbar.OnMenuItemClickListener? = toolbar.reflectDeclaredField("mOnMenuItemClickListener")
+
+        if (itemClickListener != null && itemClickListener !is DelegateOnMenuItemClickListener) {
+            val delegateItemClickListener = DelegateOnMenuItemClickListener(itemClickListener, toolbar, menuWidgetColor)
+            toolbar.setOnMenuItemClickListener(delegateItemClickListener)
+        }
+    } catch (e: Throwable) {
+        Log.v(REFLECT_TAG, "Failed to change menu color: ${e.javaClass.simpleName} ${e.message}")
     }
 }
 
@@ -226,9 +224,32 @@ internal class DelegateOnMenuItemClickListener(
 
     override fun onMenuItemClick(item: MenuItem): Boolean {
         toolbar.post {
-            tintToolbarOverflowMenu(toolbar.context, toolbar, mColor)
+            tintOverflowMenuItems(toolbar, mColor)
         }
         return parent != null && parent.onMenuItemClick(item)
+    }
+}
+
+/**
+ * register a delegated [MenuPresenter.Callback] for updating Overflow Menu Items
+ */
+@SuppressLint("RestrictedApi")
+fun applyMenuPresenterCallback(toolbar: Toolbar, @ColorInt menuWidgetColor: Int) {
+    // Tint immediate overflow menu items
+    try {
+        val presenterCallback: MenuPresenter.Callback? = toolbar.reflectDeclaredField("mActionMenuPresenterCallback")
+
+        if (presenterCallback != null && presenterCallback !is DelegateMenuPresenterCallback) {
+            val delegatePresenterCallback = DelegateMenuPresenterCallback(presenterCallback, toolbar, menuWidgetColor)
+            val menuBuilderCallback: MenuBuilder.Callback = toolbar.reflectDeclaredField("mMenuBuilderCallback")
+
+            toolbar.setMenuCallbacks(delegatePresenterCallback, menuBuilderCallback)
+
+            val menuView: ActionMenuView? = toolbar.reflectDeclaredField("mMenuView")
+            menuView?.setMenuCallbacks(delegatePresenterCallback, menuBuilderCallback)
+        }
+    } catch (e: Throwable) {
+        Log.v(REFLECT_TAG, "Failed to change menu color: ${e.javaClass.simpleName} ${e.message}")
     }
 }
 
@@ -245,7 +266,7 @@ internal class DelegateMenuPresenterCallback(
 
     override fun onOpenSubMenu(subMenu: MenuBuilder): Boolean {
         toolbar.post {
-            tintToolbarOverflowMenu(toolbar.context, toolbar, color)
+            tintOverflowMenuItems(toolbar, color)
         }
         return parent != null && parent.onOpenSubMenu(subMenu)
     }

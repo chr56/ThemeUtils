@@ -60,33 +60,31 @@ fun setMenuColor(
     if (context is Activity) {
         context.setOverflowButtonColor(menuWidgetColor)
     }
+
+    // Tint immediate overflow menu items
     try {
-        // Tint immediate overflow menu items
+        val presenterCallback: MenuPresenter.Callback? = toolbar.reflectDeclaredField("mActionMenuPresenterCallback")
 
-        val currentPresenterCb: MenuPresenter.Callback? =
-            toolbar.reflectDeclaredField("mActionMenuPresenterCallback")
+        if (presenterCallback != null && presenterCallback !is DelegateMenuPresenterCallback) {
+            val delegatePresenterCallback = DelegateMenuPresenterCallback(presenterCallback, toolbar, menuWidgetColor)
+            val menuBuilderCallback: MenuBuilder.Callback = toolbar.reflectDeclaredField("mMenuBuilderCallback")
 
-        if (currentPresenterCb != null && currentPresenterCb !is mMenuPresenterCallback) {
-            val newPresenterCb =
-                mMenuPresenterCallback(context, menuWidgetColor, currentPresenterCb, toolbar)
+            toolbar.setMenuCallbacks(delegatePresenterCallback, menuBuilderCallback)
 
-            val currentMenuCb: MenuBuilder.Callback =
-                toolbar.reflectDeclaredField("mMenuBuilderCallback")
-            toolbar.setMenuCallbacks(newPresenterCb, currentMenuCb)
-
-            val menuView: ActionMenuView? =
-                toolbar.reflectDeclaredField("mMenuView")
-            menuView?.setMenuCallbacks(newPresenterCb, currentMenuCb)
+            val menuView: ActionMenuView? = toolbar.reflectDeclaredField("mMenuView")
+            menuView?.setMenuCallbacks(delegatePresenterCallback, menuBuilderCallback)
         }
+    } catch (e: Throwable) {
+        Log.v(REFLECT_TAG, "Failed to change menu color: ${e.javaClass.simpleName} ${e.message}")
+    }
 
-        // OnMenuItemClickListener to tint submenu items
-        val currentClickListener: Toolbar.OnMenuItemClickListener? =
-            toolbar.reflectDeclaredField("mOnMenuItemClickListener")
+    // OnMenuItemClickListener to tint submenu items
+    try {
+        val itemClickListener: Toolbar.OnMenuItemClickListener? = toolbar.reflectDeclaredField("mOnMenuItemClickListener")
 
-        if (currentClickListener != null && currentClickListener !is mOnMenuItemClickListener) {
-            val newClickListener =
-                mOnMenuItemClickListener(context, menuWidgetColor, currentClickListener, toolbar)
-            toolbar.setOnMenuItemClickListener(newClickListener)
+        if (itemClickListener != null && itemClickListener !is DelegateOnMenuItemClickListener) {
+            val delegateItemClickListener = DelegateOnMenuItemClickListener(itemClickListener, toolbar, menuWidgetColor)
+            toolbar.setOnMenuItemClickListener(delegateItemClickListener)
         }
     } catch (e: Throwable) {
         Log.v(REFLECT_TAG, "Failed to change menu color: ${e.javaClass.simpleName} ${e.message}")
@@ -220,38 +218,36 @@ internal fun Activity.setOverflowButtonColor(@ColorInt color: Int) {
     }
 }
 
-internal class mOnMenuItemClickListener(
-    private val mContext: Context,
+internal class DelegateOnMenuItemClickListener(
+    private val parent: Toolbar.OnMenuItemClickListener?,
+    private val toolbar: Toolbar,
     @param:ColorInt private val mColor: Int,
-    private val mParentListener: Toolbar.OnMenuItemClickListener?,
-    private val mToolbar: Toolbar
 ) : Toolbar.OnMenuItemClickListener {
 
     override fun onMenuItemClick(item: MenuItem): Boolean {
-        mToolbar.post {
-            tintToolbarOverflowMenu(mContext, mToolbar, mColor)
+        toolbar.post {
+            tintToolbarOverflowMenu(toolbar.context, toolbar, mColor)
         }
-        return mParentListener != null && mParentListener.onMenuItemClick(item)
+        return parent != null && parent.onMenuItemClick(item)
     }
 }
 
 @SuppressLint("RestrictedApi")
-internal class mMenuPresenterCallback(
-    private val mContext: Context,
-    @param:ColorInt private val mColor: Int,
-    private val mParentCb: MenuPresenter.Callback?,
-    private val mToolbar: Toolbar
+internal class DelegateMenuPresenterCallback(
+    private val parent: MenuPresenter.Callback?,
+    private val toolbar: Toolbar,
+    @param:ColorInt private val color: Int,
 ) : MenuPresenter.Callback {
 
     override fun onCloseMenu(menu: MenuBuilder, allMenusAreClosing: Boolean) {
-        mParentCb?.onCloseMenu(menu, allMenusAreClosing)
+        parent?.onCloseMenu(menu, allMenusAreClosing)
     }
 
     override fun onOpenSubMenu(subMenu: MenuBuilder): Boolean {
-        mToolbar.post {
-            tintToolbarOverflowMenu(mContext, mToolbar, mColor)
+        toolbar.post {
+            tintToolbarOverflowMenu(toolbar.context, toolbar, color)
         }
-        return mParentCb != null && mParentCb.onOpenSubMenu(subMenu)
+        return parent != null && parent.onOpenSubMenu(subMenu)
     }
 }
 

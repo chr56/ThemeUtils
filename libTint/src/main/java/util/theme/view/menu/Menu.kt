@@ -109,10 +109,10 @@ fun tintOverflowMenuItems(toolbar: Toolbar, @ColorInt iconColor: Int) {
             val actionMenuView: ActionMenuView =
                 toolbar.reflectDeclaredField("mMenuView")
 
-            val presenter: ActionMenuPresenter =
+            val presenter: BaseMenuPresenter =
                 actionMenuView.reflectDeclaredField("mPresenter")
 
-            presenter
+            presenter as ActionMenuPresenter
         } catch (e: Throwable) {
             Log.v(REFLECT_TAG, "Failed to obtain MenuPresenter: ${e.javaClass.simpleName} ${e.message}")
             return

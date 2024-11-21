@@ -2,9 +2,11 @@
 
 ## Plugins
 
-agp = "8.6.1"
 kotlin = "2.0.20"
 ksp = "2.0.20-1.0.25"
+
+agp = "8.7.2"
+
 versionChecker = "0.51.0"
 
 ## Libraries

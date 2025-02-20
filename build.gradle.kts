@@ -2,7 +2,7 @@ plugins {
 
 }
 
-tasks.create(name = "clean", type = Delete::class) {
+tasks.register(name = "clean", type = Delete::class) {
     doLast { delete(rootProject.layout.buildDirectory) }
 }
 
